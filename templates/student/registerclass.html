@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/student/registerclass.css'%}">
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        <h2>Register Classroom</h2>
+    </nav>
+
+    <section>
+        <div class="wrapper">
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="text" name="cno" placeholder="Class Number" /> <br>
+                <select name="dept">
+                    {% for dept in depts %}
+                    <option value="{{dept.name}}">{{dept.name}}</option>
+                    {% endfor %}
+                </select> <br>
+                <select name="div">
+                    {% for div in divs %}
+                    <option value="{{div.div_name}}">{{div.div_name}}</option>
+                    {% endfor %}
+                </select> <br>
+                <input type="text" name="cip" placeholder="Link/IP to Camera" /> <br>
+                <input type="submit" value="submit"> <br />
+                <a href="/student/classrooms/">GO BACK</a>
+            </form>
+        </div>
+    </section>
+</body>
+</html>

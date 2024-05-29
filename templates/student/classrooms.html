@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/student/classrooms.css'%}">
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        <h2>ClassRooms</h1>
+    </nav>
+
+    <section>
+        <div class="wrapper">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Class No</th>
+                        <th>DEPT</th>
+                        <th>DIV</th>
+                        <th>Link</th>
+                        <th>Start</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for class in classrooms %}
+                        <tr>
+                            <td>{{class.cno}}</td>
+                            <td>{{class.dept}}</td>
+                            <td>{{class.div}}</td>
+                            <td>{{class.cip}}</td>
+                            <td><a href="{% url 'test_vidfeed' dept=class.dept div=class.div %}" target="_blank">Take Attendance</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <a href="{% url 'registerclass' %}">Register Classroom</a>
+        </div>
+    </section>
+</body>
+</html>

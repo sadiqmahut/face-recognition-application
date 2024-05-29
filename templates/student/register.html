@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/register.css'%}">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> 
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        <h2>Face Recognition Attendace System</h2>
+    </nav>
+
+    <section>
+        <h1>Student Registration</h1>
+        <div id="camera"></div>
+    </section>
+
+    <div id="details">
+        <div class="nameusn">
+            <input type="text" name="sname" placeholder="Enter Your Name" />
+            <input type="text" name="usn" placeholder="Enter Your USN" />
+        </div>
+
+        <div class="deptdiv">
+            <select name="dept">
+                {% for d in dept%}
+                 <option value="{{d.name}}">{{d.name}}</option>
+                {% endfor %}
+            </select>
+
+            <select name="div">
+                {% for d in div%}
+                    <option value="{{d.div_name}}">{{d.div_name}}</option>
+                {% endfor%}
+            </select>
+        </div>
+    </div>
+
+
+    <!--FOR THE SNAPSHOT-->
+
+    <div class="buttons">
+        <input type="button" value="Take a Snap" id="btPic" onclick="takeSnapShot()" />
+        <button id="btn-submit">Submit</button>
+    </div> 
+
+    <p style="text-align: center;padding:0px 0px 5px 0px;color:red;">Take 5 Snaps with Diffrent angles.</p>
+    
+    <div class="snapHolder" id="snapHolderId">
+    </div>
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js" integrity="sha512-QTnb9BQkG4fBYIt9JGvYmxPpd6TBeKp6lsUrtiVQsrJ9sb33Bn9s0wMQO9qVBFbPX3xHRAsBHvXlcsrnJjExjg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    // CAMERA SETTINGS.
+    //stream =  navigator.mediaDevices.enumerateDevices()
+    //console.log(stream)
+    const myFunc = async () => {
+        console.log("Hello")
+        let constraints = { 
+            audio: true, 
+            video: { 
+                width: { ideal: 1920 }, 
+                height: { ideal: 1080 } 
+            }
+        };
+    
+        let stream = await navigator.mediaDevices.getUserMedia(constraints);
+    
+        let stream_settings = stream.getVideoTracks()[0].getSettings();
+    
+        // actual width & height of the camera video
+        let stream_width = stream_settings.width;
+        let stream_height = stream_settings.height;
+        let widtH = stream_width
+        let heighT = stream_height
+        Webcam.set('constraints',{
+            deviceId: "a746183a6cd26552d0d949396183ace7dd2155f6585080cdfe51f4396fd954b6"
+        });
+    
+        
+        //WebCam Size
+        Webcam.set({
+            width: widtH,
+            height: heighT,
+            image_format: 'jpeg',
+            //force_flash: false,
+            jpeg_quality: 100
+        });
+        Webcam.attach('#camera');
+        return [widtH, heighT]
+    }
+
+    myFunc().then((res) => {
+        console.log(res)
+    })
+
+   
+    let i = 1;
+    // SHOW THE SNAPSHOT.
+    var formData = new FormData()
+    var formData123 = {}
+    var imgHolder = document.getElementsByClassName('snapHolder')[0];
+    formData.append("csrfmiddlewaretoken", '{{csrf_token}}')
+    takeSnapShot = async function () {
+        Webcam.snap(async function (data_uri) {
+            if(i<6){
+                image_data = data_uri;
+                var block = image_data.split(";");
+                var contentType = block[0].split(":")[1];
+                var realData = block[1].split(",")[1];
+                obj = {'content-type': contentType, 'data':realData}
+                formData123['image'+i] = obj
+                var imgElement = document.createElement('img');
+                imgElement.src = data_uri
+                //console.log(imgHolder);
+                imgHolder.appendChild(imgElement);
+                //console.log(formData123)
+                i += 1
+            }else{
+                alert("Limit Over Already >5")
+            }
+        });
+    }
+
+    let form = document.getElementById('btn-submit')
+
+    form.addEventListener('click', function(){
+        formData.append('images', JSON.stringify(formData123))
+        var name = document.getElementsByName('sname')
+        var usn = document.getElementsByName('usn')
+        var dept = document.getElementsByName('dept')
+        var div = document.getElementsByName('div')
+        formData.append('name',name[0].value);
+        formData.append('usn',usn[0].value);
+        formData.append('dept',dept[0].value);
+        formData.append('div',div[0].value);
+        console.log(window.location.host)
+        axios({
+            method: 'POST',
+            data: formData,
+            url: `https://${window.location.host}/student/`,
+            config: {headers: {'Accept': 'application/json','Content-Type': 'multipart/form-data'}}
+          }).then(() => {
+            console.log('Form Submitted')
+            formData.delete('images')
+        })
+        .catch( err => alert(err))
+        
+    })
+</script>
+</html>
